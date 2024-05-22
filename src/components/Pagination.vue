@@ -12,6 +12,10 @@ const emits = defineEmits(['changePage'])
 const currentPage = ref<number>(1)
 
 function nextPage() {
+  if (currentPage.value >= props.pagesCount) {
+    return
+  }
+
   currentPage.value += 1
 
   changePage()

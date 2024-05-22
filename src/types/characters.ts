@@ -35,4 +35,14 @@ export interface ILocation {
   url: string
 }
 
+export interface IEpisode {
+  id: number
+  name: string
+  air_date: string
+  episode: string
+  characters: string[]
+  url: string
+  created: string
+}
+
 export type CharacterStatusType = 'alive' | 'dead' | 'unknown' | 'No status'

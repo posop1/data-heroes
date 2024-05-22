@@ -16,6 +16,8 @@ const router = useRouter()
 const characters = ref<ICharactersResponse>()
 
 const currentPage = ref<number>(1)
+const currentCharacterName = ref<string>('')
+const currentCharacterStatus = ref<CharacterStatusType>('No status')
 
 const status = ref<STATUS>(STATUS.LOADING)
 
@@ -27,17 +29,25 @@ async function getCharacters(
     status.value = STATUS.LOADING
 
     if (page && page > 1) {
-      console.log('asd')
-
       currentPage.value = page
     }
 
-    if (filterParams) {
+    if (filterParams?.name && filterParams.status) {
+      currentCharacterName.value = filterParams.name
+      currentCharacterStatus.value = filterParams.status
+      currentPage.value = 1
+
+      router.push({
+        query: {
+          page: currentPage.value
+        }
+      })
+
       const { data } = await api.get<ICharactersResponse>('/character', {
         params: {
           page: currentPage.value,
-          name: filterParams.name,
-          status: filterParams.status === 'No status' ? '' : filterParams.status
+          name: currentCharacterName.value,
+          status: currentCharacterStatus.value === 'No status' ? '' : currentCharacterStatus.value
         }
       })
 
@@ -45,7 +55,9 @@ async function getCharacters(
     } else {
       const { data } = await api.get<ICharactersResponse>('/character', {
         params: {
-          page: currentPage.value
+          page: currentPage.value,
+          name: currentCharacterName.value,
+          status: currentCharacterStatus.value === 'No status' ? '' : currentCharacterStatus.value
         }
       })
 
@@ -59,9 +71,7 @@ async function getCharacters(
   }
 }
 
-function changePage(page: number) {
-  console.log(page)
-
+async function changePage(page: number) {
   currentPage.value = page
 
   router.push({
@@ -70,7 +80,7 @@ function changePage(page: number) {
     }
   })
 
-  getCharacters()
+  await getCharacters()
 }
 
 onMounted(() => {
@@ -83,11 +93,11 @@ onMounted(() => {
 </script>
 
 <template>
+  <Filters
+    :character-statuses="['No status', 'alive', 'dead', 'unknown']"
+    @get-characters="getCharacters"
+  />
   <main v-if="status === STATUS.COMPLETED && characters">
-    <Filters
-      :character-statuses="['No status', 'alive', 'dead', 'unknown']"
-      @get-characters="getCharacters"
-    />
     <CharacterList :characters="characters.results" />
     <Pagination
       :page="currentPage"
@@ -95,4 +105,6 @@ onMounted(() => {
       @change-page="changePage"
     />
   </main>
+  <div v-else-if="status === STATUS.LOADING">Loading</div>
+  <div v-else>Error</div>
 </template>

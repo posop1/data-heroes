@@ -10,7 +10,7 @@ import { RouterView } from 'vue-router'
 
 <style scoped lang="scss">
 .container {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
 }

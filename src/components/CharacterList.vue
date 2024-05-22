@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CharacterItem from './CharacterItem.vue'
 import type { ICharacter } from '@/types/characters'
 
 interface ICharacterListProps {
@@ -10,11 +11,11 @@ const props = defineProps<ICharacterListProps>()
 
 <template>
   <div class="characters__list">
-    <div v-for="character in props.characters" :key="character.id">
-      <img :src="character.image" :alt="character.name + ' image'" />
-      {{ character.name }}
-      {{ character.status }}
-    </div>
+    <CharacterItem
+      v-for="character in props.characters"
+      :key="character.id"
+      :character="character"
+    />
   </div>
 </template>
 
