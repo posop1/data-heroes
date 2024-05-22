@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import CharacterList from '@/components/CharacterList.vue'
 import Pagination from '@/components/Pagination.vue'
 import Filters from '@/components/Filters.vue'
+import Loader from '@/components/ui/Loader.vue'
+import ErrorBox from '@/components/ui/ErrorBox.vue'
 
 import { type CharacterStatusType, type ICharactersResponse } from '@/types/characters'
 import api from '@/api/instance'
 import { STATUS } from '@/types/common'
-import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,55 +21,45 @@ const currentPage = ref<number>(1)
 const currentCharacterName = ref<string>('')
 const currentCharacterStatus = ref<CharacterStatusType>('No status')
 
-const status = ref<STATUS>(STATUS.LOADING)
+const requestStatus = ref<STATUS>(STATUS.LOADING)
+const errorMessage = ref<string>('')
 
 async function getCharacters(
   filterParams?: { name: string; status: CharacterStatusType },
   page?: number
 ) {
   try {
-    status.value = STATUS.LOADING
+    requestStatus.value = STATUS.LOADING
 
     if (page && page > 1) {
       currentPage.value = page
     }
 
-    if (filterParams?.name && filterParams.status) {
-      currentCharacterName.value = filterParams.name
-      currentCharacterStatus.value = filterParams.status
-      currentPage.value = 1
+    currentCharacterName.value = filterParams ? filterParams.name : ''
+    currentCharacterStatus.value = filterParams ? filterParams.status : 'No status'
+    currentPage.value = 1
 
-      router.push({
-        query: {
-          page: currentPage.value
-        }
-      })
+    router.push({
+      query: {
+        page: currentPage.value
+      }
+    })
 
-      const { data } = await api.get<ICharactersResponse>('/character', {
-        params: {
-          page: currentPage.value,
-          name: currentCharacterName.value,
-          status: currentCharacterStatus.value === 'No status' ? '' : currentCharacterStatus.value
-        }
-      })
+    const { data } = await api.get<ICharactersResponse>('/character', {
+      params: {
+        page: currentPage.value,
+        name: currentCharacterName.value,
+        status: currentCharacterStatus.value === 'No status' ? '' : currentCharacterStatus.value
+      }
+    })
 
-      characters.value = data
-    } else {
-      const { data } = await api.get<ICharactersResponse>('/character', {
-        params: {
-          page: currentPage.value,
-          name: currentCharacterName.value,
-          status: currentCharacterStatus.value === 'No status' ? '' : currentCharacterStatus.value
-        }
-      })
+    characters.value = data
 
-      characters.value = data
-    }
-
-    status.value = STATUS.COMPLETED
-  } catch (error) {
+    requestStatus.value = STATUS.COMPLETED
+  } catch (error: any) {
     console.log(error)
-    STATUS.ERROR
+    errorMessage.value = error.message
+    requestStatus.value = STATUS.ERROR
   }
 }
 
@@ -97,7 +89,7 @@ onMounted(() => {
     :character-statuses="['No status', 'alive', 'dead', 'unknown']"
     @get-characters="getCharacters"
   />
-  <main v-if="status === STATUS.COMPLETED && characters">
+  <main v-if="requestStatus === STATUS.COMPLETED && characters">
     <CharacterList :characters="characters.results" />
     <Pagination
       :page="currentPage"
@@ -105,6 +97,6 @@ onMounted(() => {
       @change-page="changePage"
     />
   </main>
-  <div v-else-if="status === STATUS.LOADING">Loading</div>
-  <div v-else>Error</div>
+  <Loader v-else-if="requestStatus === STATUS.LOADING" />
+  <ErrorBox v-else-if="requestStatus === STATUS.ERROR" :message="errorMessage" />
 </template>
