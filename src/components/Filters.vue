@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { CharacterStatusType } from '@/types/characters'
 import { ref } from 'vue'
+
+import type { CharacterStatusType } from '@/types/characters'
 
 interface IFiltersProps {
   characterStatuses: CharacterStatusType[]
