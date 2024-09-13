@@ -18,10 +18,6 @@ function nextPage() {
 
   currentPage.value += 1
 
-  //TODO: asd
-
-  console.log(currentPage.value)
-
   changePage()
 }
 

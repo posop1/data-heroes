@@ -66,8 +66,6 @@ async function getCharacters(
 async function changePage(page: number) {
   currentPage.value = page
 
-  console.log(currentPage.value + 'asd')
-
   router.push({
     query: {
       page: currentPage.value
