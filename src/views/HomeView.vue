@@ -36,8 +36,8 @@ async function getCharacters(
     }
 
     currentCharacterName.value = filterParams ? filterParams.name : ''
+
     currentCharacterStatus.value = filterParams ? filterParams.status : 'No status'
-    currentPage.value = 1
 
     router.push({
       query: {
@@ -65,6 +65,8 @@ async function getCharacters(
 
 async function changePage(page: number) {
   currentPage.value = page
+
+  console.log(currentPage.value + 'asd')
 
   router.push({
     query: {
